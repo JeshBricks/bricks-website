@@ -604,7 +604,7 @@ function render(c){
     '<div class="c-item"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div><b>Working Hours</b><span>Mon – Sat: 9:00 AM – 7:00 PM</span></div></div>';
 
   document.getElementById('mapFrame').src = 'https://www.google.com/maps?q=' + encodeURIComponent(ct.mapQuery) + '&output=embed';
-  document.getElementById('waFloat').href = 'https://wa.me/' + ct.whatsapp.replace(/\D/g,'') + '?text=' + encodeURIComponent('Hi, I found you on bricksconstructions.in — I would like a quote.');
+  document.getElementById('waFloat').href = 'https://wa.me/' + ct.whatsapp.replace(/\D/g,'') + '?text=' + encodeURIComponent('Hi, I found you on bricksconstruction.in — I would like a quote.');
 
   wireAnimations();
 }
@@ -681,7 +681,7 @@ nav.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', funct
 document.getElementById('quoteForm').addEventListener('submit', function(e){
   e.preventDefault();
   var wa = (document.getElementById('waFloat').href.split('?')[0]);
-  var msg = 'New enquiry from bricksconstructions.in%0A' +
+  var msg = 'New enquiry from bricksconstruction.in%0A' +
     'Name: ' + encodeURIComponent(document.getElementById('fName').value) + '%0A' +
     'Phone: ' + encodeURIComponent(document.getElementById('fPhone').value) + '%0A' +
     'Service: ' + encodeURIComponent(document.getElementById('fService').value || '-') + '%0A' +
