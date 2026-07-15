@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Bricks Constructions</title>
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<meta name="robots" content="noindex,nofollow">
+<style>
+:root{--navy:#1a2536;--navy-2:#243248;--cream:#f4efe4;--tan:#d9b98a;--tan-2:#c9a56d;--ok:#2e9e5b;--err:#c0392b}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--cream);color:#2a2a2a;min-height:100vh}
+h1,h2,h3{color:var(--navy)}
+button{cursor:pointer;font-family:inherit}
+
+/* login */
+#loginView{max-width:520px;margin:7vh auto;background:#fff;border-radius:18px;padding:40px;box-shadow:0 12px 40px rgba(26,37,54,.14)}
+#loginView img{height:64px;display:block;margin:0 auto 14px}
+#loginView h1{text-align:center;font-size:1.3rem;letter-spacing:1px;margin-bottom:4px}
+#loginView .sub{text-align:center;color:var(--tan-2);font-weight:700;font-size:.75rem;letter-spacing:3px;margin-bottom:28px}
+label{display:block;font-weight:700;font-size:.85rem;color:var(--navy);margin:14px 0 6px}
+input,textarea,select{width:100%;padding:12px 14px;border:2px solid #ddd3bd;border-radius:9px;font-family:inherit;font-size:.93rem;background:#fff}
+input:focus,textarea:focus{outline:none;border-color:var(--tan-2)}
+textarea{resize:vertical;min-height:80px}
+.btn{background:var(--navy);color:var(--cream);border:none;padding:13px 26px;border-radius:9px;font-weight:700;font-size:.95rem;transition:transform .2s}
+.btn:hover{transform:translateY(-2px)}
+.btn.full{width:100%;margin-top:22px}
+.btn.ghost{background:transparent;color:var(--navy);border:2px solid var(--navy)}
+.btn.small{padding:8px 14px;font-size:.82rem}
+.btn.danger{background:var(--err)}
+.hint{font-size:.8rem;color:#777;line-height:1.5;margin-top:6px}
+.hint a{color:var(--tan-2)}
+
+/* app */
+#appView{display:none}
+.topbar{background:var(--navy);color:var(--cream);padding:12px 4vw;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20}
+.topbar .l{display:flex;align-items:center;gap:12px}
+.topbar img{height:38px;filter:brightness(0) invert(.95)}
+.topbar b{letter-spacing:1.5px}
+.topbar span{font-size:.7rem;color:var(--tan);letter-spacing:2px;display:block}
+.topbar .r{display:flex;gap:10px;align-items:center}
+.wrap{max-width:980px;margin:0 auto;padding:26px 4vw 120px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.tab{background:#fff;border:2px solid #ddd3bd;border-radius:30px;padding:9px 20px;font-weight:700;font-size:.86rem;color:var(--navy)}
+.tab.active{background:var(--navy);color:var(--cream);border-color:var(--navy)}
+.panel{display:none;background:#fff;border-radius:16px;padding:30px;box-shadow:0 6px 24px rgba(26,37,54,.08)}
+.panel.active{display:block}
+.panel h2{font-size:1.15rem;margin-bottom:6px}
+.panel .desc{color:#888;font-size:.85rem;margin-bottom:18px}
+.item{border:2px solid #eee6d2;border-radius:12px;padding:18px;margin-bottom:16px;position:relative}
+.item .rm{position:absolute;top:12px;right:12px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.row2{grid-template-columns:1fr}}
+.addbtn{border:2px dashed var(--tan-2);background:none;color:var(--tan-2);width:100%;padding:13px;border-radius:12px;font-weight:700;margin-top:4px}
+.thumb-preview{max-height:110px;border-radius:8px;margin-top:8px;display:block}
+.savebar{position:fixed;bottom:0;left:0;right:0;background:#fff;box-shadow:0 -6px 24px rgba(26,37,54,.12);padding:14px 4vw;display:flex;gap:14px;align-items:center;justify-content:flex-end;z-index:30}
+#status{margin-right:auto;font-weight:600;font-size:.9rem}
+#status.ok{color:var(--ok)}#status.err{color:var(--err)}
+.steps{background:var(--cream);border-radius:10px;padding:16px 18px;font-size:.85rem;line-height:1.7;margin-top:18px;color:#555}
+.steps b{color:var(--navy)}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="loginView">
+  <img src="logo.svg" alt="logo">
+  <h1>BRICKS CONSTRUCTIONS</h1>
+  <div class="sub">ADMIN PANEL</div>
+
+  <label>GitHub Username</label>
+  <input id="cfgOwner" placeholder="e.g. jeshbricks">
+  <label>Repository Name</label>
+  <input id="cfgRepo" placeholder="e.g. bricks-website" value="bricks-website">
+  <label>Access Token (your admin password)</label>
+  <input id="cfgToken" type="password" placeholder="github_pat_...">
+  <div class="hint">This token is created once from your GitHub account and works like your admin password. It is saved only on this device.</div>
+  <button class="btn full" id="loginBtn">Login</button>
+  <div id="loginMsg" class="hint" style="color:var(--err);font-weight:600"></div>
+
+  <div class="steps">
+    <b>First time? Create your token:</b><br>
+    1. Go to github.com → Settings → Developer settings → Personal access tokens → <b>Fine-grained tokens</b> → Generate new token<br>
+    2. Name: "Bricks Admin" · Expiration: 1 year<br>
+    3. Repository access: <b>Only select repositories</b> → choose your website repo<br>
+    4. Permissions → Repository permissions → <b>Contents: Read and write</b><br>
+    5. Generate, copy the token and paste it above.
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="appView">
+  <div class="topbar">
+    <div class="l"><img src="logo.svg" alt=""><div><b>BRICKS</b><span>ADMIN PANEL</span></div></div>
+    <div class="r">
+      <a class="btn small ghost" style="text-decoration:none;color:var(--cream);border-color:var(--tan)" href="index.html" target="_blank">View Site</a>
+      <button class="btn small danger" id="logoutBtn">Logout</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="tabs">
+      <button class="tab active" data-p="pSite">Home Page</button>
+      <button class="tab" data-p="pAbout">About & Stats</button>
+      <button class="tab" data-p="pServices">Services</button>
+      <button class="tab" data-p="pProjects">Projects</button>
+      <button class="tab" data-p="pTesti">Reviews</button>
+      <button class="tab" data-p="pContact">Contact Info</button>
+    </div>
+
+    <div class="panel active" id="pSite">
+      <h2>Home Page Text</h2><div class="desc">The first thing customers see.</div>
+      <label>Tagline</label><input data-path="site.tagline">
+      <label>Main Heading (line 1)</label><input data-path="site.heroTitle">
+      <label>Main Heading (line 2, gold colour)</label><input data-path="site.heroTitleAccent">
+      <label>Subtitle</label><textarea data-path="site.heroSubtitle"></textarea>
+    </div>
+
+    <div class="panel" id="pAbout">
+      <h2>About Section</h2><div class="desc">Company description and the number counters.</div>
+      <label>Heading</label><input data-path="about.heading">
+      <label>About Text</label><textarea data-path="about.text" style="min-height:140px"></textarea>
+      <h2 style="margin-top:26px">Stats Counters</h2>
+      <div id="statsList"></div>
+    </div>
+
+    <div class="panel" id="pServices">
+      <h2>Services</h2><div class="desc">Add, edit or remove the services you offer.</div>
+      <div id="servicesList"></div>
+      <button class="addbtn" id="addService">+ Add Service</button>
+    </div>
+
+    <div class="panel" id="pProjects">
+      <h2>Projects Gallery</h2><div class="desc">Showcase your completed work. Upload a photo for each project.</div>
+      <div id="projectsList"></div>
+      <button class="addbtn" id="addProject">+ Add Project</button>
+    </div>
+
+    <div class="panel" id="pTesti">
+      <h2>Customer Reviews</h2><div class="desc">Testimonials shown on the website.</div>
+      <div id="testiList"></div>
+      <button class="addbtn" id="addTesti">+ Add Review</button>
+    </div>
+
+    <div class="panel" id="pContact">
+      <h2>Contact Information</h2><div class="desc">Phone, email and address shown across the site.</div>
+      <div class="row2">
+        <div><label>Phone 1</label><input data-path="contact.phone1"></div>
+        <div><label>Phone 2</label><input data-path="contact.phone2"></div>
+      </div>
+      <label>Email</label><input data-path="contact.email">
+      <label>Address</label><textarea data-path="contact.address"></textarea>
+      <label>Google Maps Search (for the map on the site)</label><input data-path="contact.mapQuery">
+      <label>WhatsApp Number (with country code, e.g. 917338899081)</label><input data-path="contact.whatsapp">
+    </div>
+  </div>
+
+  <div class="savebar">
+    <div id="status"></div>
+    <button class="btn ghost" id="reloadBtn">Discard Changes</button>
+    <button class="btn" id="saveBtn">💾 Save &amp; Publish</button>
+  </div>
+</div>
+
+<script>
+var API = 'https://api.github.com';
+var content = null, fileSha = null;
+var cfg = {
+  owner: localStorage.getItem('bc_owner') || '',
+  repo:  localStorage.getItem('bc_repo')  || 'bricks-website',
+  token: localStorage.getItem('bc_token') || ''
+};
+var SERVICE_ICONS = ['building','office','renovation','interior','plan','supervision'];
+
+function $(id){return document.getElementById(id)}
+function esc(s){var d=document.createElement('div');d.textContent=s==null?'':String(s);return d.innerHTML}
+function b64encode(str){return btoa(unescape(encodeURIComponent(str)))}
+function b64decode(b64){return decodeURIComponent(escape(atob(b64.replace(/\n/g,''))))}
+function setStatus(msg, cls){var s=$('status');s.textContent=msg;s.className=cls||''}
+
+function gh(path, opts){
+  opts = opts || {};
+  opts.headers = Object.assign({
+    'Authorization':'Bearer '+cfg.token,
+    'Accept':'application/vnd.github+json'
+  }, opts.headers||{});
+  return fetch(API+path, opts);
+}
+
+/* ---------- login ---------- */
+$('cfgOwner').value = cfg.owner; $('cfgRepo').value = cfg.repo;
+$('loginBtn').addEventListener('click', function(){
+  cfg.owner = $('cfgOwner').value.trim();
+  cfg.repo  = $('cfgRepo').value.trim();
+  cfg.token = $('cfgToken').value.trim() || cfg.token;
+  if(!cfg.owner || !cfg.repo || !cfg.token){ $('loginMsg').textContent='Please fill in all three fields.'; return; }
+  $('loginMsg').textContent=''; setStatus('');
+  loadContent(true);
+});
+$('logoutBtn').addEventListener('click', function(){
+  localStorage.removeItem('bc_token');
+  location.reload();
+});
+
+function loadContent(fromLogin){
+  gh('/repos/'+cfg.owner+'/'+cfg.repo+'/contents/content.json?ref=main&_='+Date.now())
+    .then(function(r){
+      if(r.status===401||r.status===403) throw new Error('Token not accepted. Check the token and its permissions (Contents: Read and write).');
+      if(r.status===404) throw new Error('Repository or content.json not found. Check username "'+cfg.owner+'" and repo "'+cfg.repo+'".');
+      if(!r.ok) throw new Error('GitHub error ('+r.status+').');
+      return r.json();
+    })
+    .then(function(j){
+      fileSha = j.sha;
+      content = JSON.parse(b64decode(j.content));
+      localStorage.setItem('bc_owner',cfg.owner);
+      localStorage.setItem('bc_repo',cfg.repo);
+      localStorage.setItem('bc_token',cfg.token);
+      $('loginView').style.display='none';
+      $('appView').style.display='block';
+      renderAll();
+      setStatus('Loaded. Make your changes and press Save & Publish.','ok');
+    })
+    .catch(function(e){
+      if(fromLogin){ $('loginMsg').textContent = e.message; }
+      else setStatus(e.message,'err');
+    });
+}
+if(cfg.owner && cfg.repo && cfg.token) loadContent(false);
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('.tab').forEach(function(t){
+  t.addEventListener('click', function(){
+    document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('active')});
+    document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('active')});
+    t.classList.add('active');
+    $(t.getAttribute('data-p')).classList.add('active');
+  });
+});
+
+/* ---------- simple fields (data-path) ---------- */
+function getPath(obj,path){return path.split('.').reduce(function(o,k){return o&&o[k]},obj)}
+function setPath(obj,path,val){var ks=path.split('.'),last=ks.pop(),o=ks.reduce(function(o,k){return o[k]},obj);o[last]=val}
+
+function renderAll(){
+  document.querySelectorAll('[data-path]').forEach(function(el){
+    el.value = getPath(content, el.getAttribute('data-path')) || '';
+    el.oninput = function(){ setPath(content, el.getAttribute('data-path'), el.value); };
+  });
+  renderStats(); renderServices(); renderProjects(); renderTesti();
+}
+
+/* ---------- stats ---------- */
+function renderStats(){
+  $('statsList').innerHTML = content.about.stats.map(function(s,i){
+    return '<div class="item"><div class="row2">'+
+      '<div><label>Number</label><input value="'+esc(s.number)+'" onchange="content.about.stats['+i+'].number=this.value"></div>'+
+      '<div><label>Suffix (+ or %)</label><input value="'+esc(s.suffix)+'" onchange="content.about.stats['+i+'].suffix=this.value"></div></div>'+
+      '<label>Label</label><input value="'+esc(s.label)+'" onchange="content.about.stats['+i+'].label=this.value"></div>';
+  }).join('');
+}
+
+/* ---------- services ---------- */
+function renderServices(){
+  $('servicesList').innerHTML = content.services.map(function(s,i){
+    var opts = SERVICE_ICONS.map(function(ic){return '<option '+(s.icon===ic?'selected':'')+'>'+ic+'</option>'}).join('');
+    return '<div class="item">'+
+      '<button class="btn small danger rm" onclick="removeItem(\'services\','+i+')">✕ Remove</button>'+
+      '<label>Service Name</label><input value="'+esc(s.title)+'" onchange="content.services['+i+'].title=this.value">'+
+      '<label>Description</label><textarea onchange="content.services['+i+'].description=this.value">'+esc(s.description)+'</textarea>'+
+      '<label>Icon</label><select onchange="content.services['+i+'].icon=this.value">'+opts+'</select></div>';
+  }).join('');
+}
+$('addService').addEventListener('click', function(){
+  content.services.push({icon:'building',title:'New Service',description:''});
+  renderServices();
+});
+
+/* ---------- projects ---------- */
+function renderProjects(){
+  $('projectsList').innerHTML = content.projects.map(function(p,i){
+    return '<div class="item">'+
+      '<button class="btn small danger rm" onclick="removeItem(\'projects\','+i+')">✕ Remove</button>'+
+      '<label>Project Title</label><input value="'+esc(p.title)+'" onchange="content.projects['+i+'].title=this.value">'+
+      '<div class="row2"><div><label>Category</label><input value="'+esc(p.category)+'" onchange="content.projects['+i+'].category=this.value"></div>'+
+      '<div><label>Photo</label><input type="file" accept="image/*" onchange="uploadImage(this,'+i+')"></div></div>'+
+      '<label>Description</label><textarea onchange="content.projects['+i+'].description=this.value">'+esc(p.description)+'</textarea>'+
+      (p.image ? '<img class="thumb-preview" src="https://raw.githubusercontent.com/'+cfg.owner+'/'+cfg.repo+'/main/'+esc(p.image)+'" onerror="this.style.display=\'none\'">' : '<div class="hint">No photo yet — a placeholder graphic is shown on the site.</div>')+
+      '</div>';
+  }).join('');
+}
+$('addProject').addEventListener('click', function(){
+  content.projects.push({title:'New Project',category:'Residential',description:'',image:''});
+  renderProjects();
+});
+
+function uploadImage(input, idx){
+  var f = input.files[0]; if(!f) return;
+  if(f.size > 4*1024*1024){ setStatus('Image too large — please use a photo under 4 MB.','err'); return; }
+  setStatus('Uploading photo…');
+  var reader = new FileReader();
+  reader.onload = function(){
+    var b64 = reader.result.split(',')[1];
+    var name = 'images/' + Date.now() + '-' + f.name.toLowerCase().replace(/[^a-z0-9.]+/g,'-');
+    gh('/repos/'+cfg.owner+'/'+cfg.repo+'/contents/'+name, {
+      method:'PUT',
+      body: JSON.stringify({message:'Upload project photo', content:b64, branch:'main'})
+    }).then(function(r){
+      if(!r.ok) throw new Error('Photo upload failed ('+r.status+').');
+      return r.json();
+    }).then(function(){
+      content.projects[idx].image = name;
+      renderProjects();
+      setStatus('Photo uploaded ✔ — press Save & Publish to update the site.','ok');
+    }).catch(function(e){ setStatus(e.message,'err'); });
+  };
+  reader.readAsDataURL(f);
+}
+
+/* ---------- testimonials ---------- */
+function renderTesti(){
+  $('testiList').innerHTML = content.testimonials.map(function(t,i){
+    return '<div class="item">'+
+      '<button class="btn small danger rm" onclick="removeItem(\'testimonials\','+i+')">✕ Remove</button>'+
+      '<div class="row2"><div><label>Customer Name</label><input value="'+esc(t.name)+'" onchange="content.testimonials['+i+'].name=this.value"></div>'+
+      '<div><label>Location</label><input value="'+esc(t.location)+'" onchange="content.testimonials['+i+'].location=this.value"></div></div>'+
+      '<label>Review</label><textarea onchange="content.testimonials['+i+'].text=this.value">'+esc(t.text)+'</textarea></div>';
+  }).join('');
+}
+$('addTesti').addEventListener('click', function(){
+  content.testimonials.push({name:'',location:'',text:''});
+  renderTesti();
+});
+
+function removeItem(key, idx){
+  if(!confirm('Remove this item?')) return;
+  content[key].splice(idx,1);
+  if(key==='services')renderServices();
+  if(key==='projects')renderProjects();
+  if(key==='testimonials')renderTesti();
+}
+
+/* ---------- save ---------- */
+$('saveBtn').addEventListener('click', function(){
+  setStatus('Publishing…');
+  $('saveBtn').disabled = true;
+  gh('/repos/'+cfg.owner+'/'+cfg.repo+'/contents/content.json', {
+    method:'PUT',
+    body: JSON.stringify({
+      message:'Update website content from admin panel',
+      content: b64encode(JSON.stringify(content,null,2)),
+      sha: fileSha,
+      branch:'main'
+    })
+  }).then(function(r){
+    if(r.status===409) throw new Error('Conflict — press Discard Changes to reload, then edit again.');
+    if(!r.ok) throw new Error('Save failed ('+r.status+'). Check your token.');
+    return r.json();
+  }).then(function(j){
+    fileSha = j.content.sha;
+    setStatus('Published ✔ Your website updates in about 1 minute.','ok');
+  }).catch(function(e){ setStatus(e.message,'err'); })
+    .finally(function(){ $('saveBtn').disabled=false; });
+});
+
+$('reloadBtn').addEventListener('click', function(){ loadContent(false); });
+</script>
+</body>
+</html>
