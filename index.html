@@ -125,6 +125,9 @@ nav a:not(.cta-btn):hover::after{transform:scaleX(1);transform-origin:left}
 /* ===== Hero ===== */
 .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;
   padding:140px 6vw 170px;position:relative}
+.hero::before{content:"";position:absolute;top:8%;left:50%;transform:translateX(-50%);
+  width:min(1100px,96vw);height:78%;pointer-events:none;z-index:-1;
+  background:radial-gradient(closest-side,rgba(246,242,232,.95) 0%,rgba(246,242,232,.6) 52%,rgba(246,242,232,0) 100%)}
 .hero .tagline{display:flex;align-items:center;gap:18px;color:var(--gold);font-weight:600;letter-spacing:.42em;
   text-transform:uppercase;font-size:.72rem;margin-bottom:30px;opacity:0;animation:rise 1.1s var(--ease) .15s forwards}
 .hero .tagline::before,.hero .tagline::after{content:"";width:44px;height:1px;background:linear-gradient(90deg,transparent,var(--tan-2));display:block}
