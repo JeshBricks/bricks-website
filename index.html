@@ -163,7 +163,7 @@ section{padding:130px 6vw;position:relative}
 .reveal.visible{opacity:1;transform:translateY(0);filter:blur(0)}
 
 /* About */
-#about{background:rgba(255,255,255,.55);backdrop-filter:blur(3px)}
+#about{background:rgba(250,247,238,.82)}
 #about p{max-width:800px;font-size:1.08rem;line-height:1.9;color:#4c4a42}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:24px;margin-top:76px}
 .stat{background:linear-gradient(160deg,var(--navy-2) 0%,var(--navy-3) 100%);color:var(--cream);border-radius:var(--r);
@@ -215,7 +215,7 @@ section{padding:130px 6vw;position:relative}
 .proj p{font-size:.9rem;color:rgba(246,242,232,.68);line-height:1.7}
 
 /* Testimonials */
-#testimonials{background:rgba(246,242,232,.72);backdrop-filter:blur(3px)}
+#testimonials{background:rgba(250,247,238,.82)}
 .testi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px}
 .testi{background:rgba(255,255,255,.92);border-radius:var(--r);padding:40px 34px;box-shadow:var(--shadow-s);
   border:1px solid rgba(22,35,58,.05);position:relative;
@@ -230,7 +230,7 @@ section{padding:130px 6vw;position:relative}
 .testi .who span{font-size:.78rem;color:var(--gold);font-weight:500;letter-spacing:.04em}
 
 /* Contact */
-#contact{background:rgba(255,255,255,.6);backdrop-filter:blur(3px)}
+#contact{background:rgba(250,247,238,.82)}
 .contact-wrap{display:grid;grid-template-columns:1fr 1fr;gap:56px}
 .c-item{display:flex;gap:18px;align-items:flex-start;margin-bottom:30px}
 .c-item .ic{width:50px;height:50px;min-width:50px;border-radius:14px;background:var(--navy);display:flex;align-items:center;justify-content:center;
@@ -697,6 +697,16 @@ function wireAnimations(){
   document.querySelectorAll('.stats .stat').forEach(function(el){
     el.classList.add('reveal'); io.observe(el);
   });
+  /* safety: anything already on screen reveals immediately */
+  setTimeout(function(){
+    document.querySelectorAll('.reveal:not(.visible)').forEach(function(el){
+      var r = el.getBoundingClientRect();
+      if(r.top < window.innerHeight && r.bottom > 0){
+        el.classList.add('visible');
+        el.querySelectorAll('.num[data-target]').forEach(animateCounter);
+      }
+    });
+  }, 400);
 }
 
 function animateCounter(el){
