@@ -697,8 +697,8 @@ function wireAnimations(){
   document.querySelectorAll('.stats .stat').forEach(function(el){
     el.classList.add('reveal'); io.observe(el);
   });
-  /* safety: anything already on screen reveals immediately */
-  setTimeout(function(){
+  /* safety: anything on screen reveals even during very fast scrolling */
+  function sweep(){
     document.querySelectorAll('.reveal:not(.visible)').forEach(function(el){
       var r = el.getBoundingClientRect();
       if(r.top < window.innerHeight && r.bottom > 0){
@@ -706,7 +706,12 @@ function wireAnimations(){
         el.querySelectorAll('.num[data-target]').forEach(animateCounter);
       }
     });
-  }, 400);
+  }
+  setTimeout(sweep, 400);
+  var sweepT;
+  window.addEventListener('scroll', function(){
+    clearTimeout(sweepT); sweepT = setTimeout(sweep, 160);
+  },{passive:true});
 }
 
 function animateCounter(el){
