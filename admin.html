@@ -53,6 +53,11 @@ textarea{resize:vertical;min-height:80px}
 @media(max-width:640px){.row2{grid-template-columns:1fr}}
 .addbtn{border:2px dashed var(--tan-2);background:none;color:var(--tan-2);width:100%;padding:13px;border-radius:12px;font-weight:700;margin-top:4px}
 .thumb-preview{max-height:110px;border-radius:8px;margin-top:8px;display:block}
+.ph-grid{display:flex;flex-wrap:wrap;gap:12px;margin:8px 0 6px}
+.ph{position:relative}
+.ph img{height:86px;width:86px;object-fit:cover;border-radius:10px;display:block;background:#e8e2d2}
+.ph button{position:absolute;top:-8px;right:-8px;width:26px;height:26px;border-radius:50%;border:none;background:var(--err);
+  color:#fff;cursor:pointer;font-size:13px;line-height:1;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 .savebar{position:fixed;bottom:0;left:0;right:0;background:#fff;box-shadow:0 -6px 24px rgba(26,37,54,.12);padding:14px 4vw;display:flex;gap:14px;align-items:center;justify-content:flex-end;z-index:30}
 #status{margin-right:auto;font-weight:600;font-size:.9rem}
 #status.ok{color:var(--ok)}#status.err{color:var(--err)}
@@ -278,8 +283,17 @@ $('addService').addEventListener('click', function(){
 
 /* ---------- projects ---------- */
 function renderProjects(){
+  /* migrate old single-photo format to photo list */
+  content.projects.forEach(function(p){
+    if(!p.images){ p.images = p.image ? [p.image] : []; }
+    delete p.image;
+  });
   $('projectsList').innerHTML = content.projects.map(function(p,i){
     var st = /complete/i.test(p.status||'') ? 'Completed' : 'Ongoing';
+    var ph = (p.images||[]).map(function(u,k){
+      return '<div class="ph"><img src="https://raw.githubusercontent.com/'+cfg.owner+'/'+cfg.repo+'/main/'+esc(u)+'" alt="">'+
+        '<button onclick="removePhoto('+i+','+k+')" aria-label="Remove photo">✕</button></div>';
+    }).join('');
     return '<div class="item">'+
       '<button class="btn small danger rm" onclick="removeItem(\'projects\','+i+')">✕ Remove</button>'+
       '<label>Project Title</label><input value="'+esc(p.title)+'" onchange="content.projects['+i+'].title=this.value">'+
@@ -287,38 +301,60 @@ function renderProjects(){
       '<div><label>Status</label><select onchange="content.projects['+i+'].status=this.value">'+
         '<option'+(st==='Ongoing'?' selected':'')+'>Ongoing</option>'+
         '<option'+(st==='Completed'?' selected':'')+'>Completed</option></select></div></div>'+
-      '<label>Photo</label><input type="file" accept="image/*" onchange="uploadImage(this,'+i+')">'+
+      '<label>Photos ('+(p.images||[]).length+')</label>'+
+      (ph ? '<div class="ph-grid">'+ph+'</div>' : '<div class="hint">No photos yet — a placeholder graphic is shown on the site.</div>')+
+      '<input type="file" accept="image/*" multiple onchange="uploadImage(this,'+i+')">'+
+      '<div class="hint">You can select several photos at once. First photo becomes the cover.</div>'+
       '<label>Description</label><textarea onchange="content.projects['+i+'].description=this.value">'+esc(p.description)+'</textarea>'+
-      (p.image ? '<img class="thumb-preview" src="https://raw.githubusercontent.com/'+cfg.owner+'/'+cfg.repo+'/main/'+esc(p.image)+'" onerror="this.style.display=\'none\'">' : '<div class="hint">No photo yet — a placeholder graphic is shown on the site.</div>')+
       '</div>';
   }).join('');
 }
 $('addProject').addEventListener('click', function(){
-  content.projects.push({title:'New Project',category:'Residential',status:'Ongoing',description:'',image:''});
+  content.projects.push({title:'New Project',category:'Residential',status:'Ongoing',description:'',images:[]});
   renderProjects();
 });
 
+function removePhoto(i,k){
+  if(!confirm('Remove this photo from the project?')) return;
+  content.projects[i].images.splice(k,1);
+  renderProjects();
+  setStatus('Photo removed — press Save & Publish to update the site.','ok');
+}
+
 function uploadImage(input, idx){
-  var f = input.files[0]; if(!f) return;
-  if(f.size > 4*1024*1024){ setStatus('Image too large — please use a photo under 4 MB.','err'); return; }
-  setStatus('Uploading photo…');
-  var reader = new FileReader();
-  reader.onload = function(){
-    var b64 = reader.result.split(',')[1];
-    var name = 'images/' + Date.now() + '-' + f.name.toLowerCase().replace(/[^a-z0-9.]+/g,'-');
-    gh('/repos/'+cfg.owner+'/'+cfg.repo+'/contents/'+name, {
-      method:'PUT',
-      body: JSON.stringify({message:'Upload project photo', content:b64, branch:'main'})
-    }).then(function(r){
-      if(!r.ok) throw new Error('Photo upload failed ('+r.status+').');
-      return r.json();
-    }).then(function(){
-      content.projects[idx].image = name;
+  var files = Array.prototype.slice.call(input.files||[]);
+  if(!files.length) return;
+  if(files.some(function(f){ return f.size > 4*1024*1024; })){
+    setStatus('Each photo must be under 4 MB. Please resize and try again.','err'); return;
+  }
+  var done = 0;
+  setStatus('Uploading '+files.length+' photo(s)…');
+  function one(k){
+    if(k >= files.length){
       renderProjects();
-      setStatus('Photo uploaded ✔ — press Save & Publish to update the site.','ok');
-    }).catch(function(e){ setStatus(e.message,'err'); });
-  };
-  reader.readAsDataURL(f);
+      setStatus('Uploaded '+done+' photo(s) ✔ — press Save & Publish to update the site.','ok');
+      return;
+    }
+    var f = files[k];
+    var reader = new FileReader();
+    reader.onload = function(){
+      var b64 = reader.result.split(',')[1];
+      var name = 'images/' + Date.now() + '-' + k + '-' + f.name.toLowerCase().replace(/[^a-z0-9.]+/g,'-');
+      gh('/repos/'+cfg.owner+'/'+cfg.repo+'/contents/'+name, {
+        method:'PUT',
+        body: JSON.stringify({message:'Upload project photo', content:b64, branch:'main'})
+      }).then(function(r){
+        if(!r.ok) throw new Error('Photo upload failed ('+r.status+'). Check your token.');
+        return r.json();
+      }).then(function(){
+        content.projects[idx].images.push(name);
+        done++;
+        one(k+1);
+      }).catch(function(e){ setStatus(e.message,'err'); renderProjects(); });
+    };
+    reader.readAsDataURL(f);
+  }
+  one(0);
 }
 
 /* ---------- testimonials ---------- */

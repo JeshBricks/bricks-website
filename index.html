@@ -276,6 +276,26 @@ section{padding:170px 6vw;position:relative}
   text-transform:uppercase;z-index:2;font-weight:500}
 .proj .st.ongoing{background:rgba(23,28,37,.82);color:var(--ivory)}
 .proj .st.completed{background:var(--champagne);color:var(--graphite);font-weight:600}
+.proj.hasgal{cursor:pointer}
+.proj .cnt{position:absolute;bottom:16px;right:18px;background:rgba(13,16,23,.72);color:var(--ivory);font-size:.66rem;
+  letter-spacing:.12em;padding:7px 14px;border-radius:100px;z-index:2;display:flex;align-items:center;gap:7px}
+.proj .cnt svg{width:13px;height:13px;stroke:var(--champagne);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+
+/* Lightbox gallery */
+#lb{position:fixed;inset:0;z-index:90;background:rgba(11,14,20,.96);display:none;flex-direction:column;align-items:center;justify-content:center;padding:4vh 4vw}
+#lb.on{display:flex}
+#lb img{max-width:92vw;max-height:70vh;border-radius:14px;box-shadow:0 30px 80px rgba(0,0,0,.5);object-fit:contain}
+#lb .lb-cap{margin-top:24px;text-align:center;color:var(--ivory);font-family:var(--serif);font-size:1.25rem}
+#lb .lb-cnt{color:var(--champagne);font-size:.68rem;letter-spacing:.32em;margin-top:8px}
+#lb button{position:absolute;background:rgba(247,244,236,.08);border:1px solid rgba(247,244,236,.25);color:var(--ivory);
+  width:52px;height:52px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background .4s var(--ease)}
+#lb button:hover{background:rgba(247,244,236,.2)}
+#lb button svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#lb .lb-x{top:26px;right:26px}
+#lb .lb-p{left:22px;top:50%;transform:translateY(-50%)}
+#lb .lb-n{right:22px;top:50%;transform:translateY(-50%)}
+@media(max-width:880px){#lb .lb-p{left:8px}#lb .lb-n{right:8px}#lb button{width:44px;height:44px}}
 .proj .body{padding:30px 30px 34px}
 .proj h3{font-size:1.45rem;margin-bottom:8px;color:var(--charcoal)}
 .proj p{font-size:.9rem;color:var(--muted);line-height:1.8}
@@ -735,6 +755,15 @@ footer::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;
   </div>
 </section>
 
+<div id="lb" role="dialog" aria-modal="true" aria-label="Project photo gallery">
+  <button class="lb-x" aria-label="Close gallery"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+  <button class="lb-p" aria-label="Previous photo"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <img id="lbImg" src="" alt="Project photo">
+  <div class="lb-cap" id="lbCap"></div>
+  <div class="lb-cnt" id="lbCnt"></div>
+  <button class="lb-n" aria-label="Next photo"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+</div>
+
 <a class="wa-float" id="waFloat" href="#" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
   <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.1.6 4.2 1.6 6L4 29l8.2-1.5c1.7.9 3.6 1.4 5.8 1.4 6.6 0 12-5.4 12-12S22.6 3 16 3zm0 22.4c-1.9 0-3.7-.5-5.2-1.4l-.4-.2-4.9.9.9-4.7-.2-.4c-1-1.6-1.6-3.5-1.6-5.6C4.6 9.1 9.7 4 16 4s11.4 5.1 11.4 11.4S22.3 25.4 16 25.4zm6.3-8.5c-.3-.2-2-1-2.3-1.1-.3-.1-.5-.2-.8.2-.2.3-.9 1.1-1 1.3-.2.2-.4.3-.7.1-.3-.2-1.4-.5-2.7-1.7-1-.9-1.7-2-1.9-2.3-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.3.3-.6.1-.2.1-.4 0-.6-.1-.2-.8-1.9-1.1-2.6-.3-.7-.6-.6-.8-.6h-.7c-.2 0-.6.1-.9.4-.3.3-1.2 1.2-1.2 2.9s1.2 3.4 1.4 3.6c.2.2 2.4 3.7 5.9 5.2.8.4 1.5.6 2 .7.8.3 1.6.2 2.2.1.7-.1 2-.8 2.3-1.6.3-.8.3-1.5.2-1.6-.1-.2-.3-.3-.6-.4z"/></svg>
 </a>
@@ -791,8 +820,12 @@ function startTestiTimer(){
 }
 
 /* ---------- projects filters (status + category, combined) ---------- */
-var activeStatus = '*', activeCat = '*';
+var activeStatus = '*', activeCat = '*', currentProjects = [];
 function projStatus(p){ return /complete/i.test(p.status||'') ? 'Completed' : 'Ongoing'; }
+function projImages(p){
+  if(p.images && p.images.length) return p.images;
+  return p.image ? [p.image] : [];
+}
 function applyProjFilter(){
   document.querySelectorAll('#projGrid .proj').forEach(function(card){
     var ok = (activeStatus==='*' || card.getAttribute('data-status')===activeStatus) &&
@@ -845,11 +878,18 @@ function render(c){
   var sel = document.getElementById('fService');
   sel.innerHTML = '<option value="">Select Service</option>' + c.services.map(function(s){return '<option>'+esc(s.title)+'</option>'}).join('');
 
+  currentProjects = c.projects;
   document.getElementById('projGrid').innerHTML = c.projects.map(function(p,i){
-    var thumb = p.image ? '<img src="'+esc(p.image)+'" alt="'+esc(p.title)+'" loading="lazy">' : PLACEHOLDER_THUMBS[i % PLACEHOLDER_THUMBS.length];
+    var imgs = projImages(p);
+    var thumb = imgs.length ? '<img src="'+esc(imgs[0])+'" alt="'+esc(p.title)+'" loading="lazy">' : PLACEHOLDER_THUMBS[i % PLACEHOLDER_THUMBS.length];
+    var cnt = imgs.length > 1 ? '<span class="cnt"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10.5" r="1.6"/><path d="M21 15.5 16.5 11 7 19"/></svg>'+imgs.length+'</span>' : '';
     var st = projStatus(p);
-    return '<article class="proj reveal" data-cat="'+esc(p.category)+'" data-status="'+st+'"><div class="thumb"><span class="cat">'+esc(p.category)+'</span><span class="st '+st.toLowerCase()+'">'+st+'</span>'+thumb+'</div><div class="body"><h3>'+esc(p.title)+'</h3><p>'+esc(p.description)+'</p></div></article>';
+    return '<article class="proj reveal'+(imgs.length?' hasgal':'')+'" data-idx="'+i+'" data-cat="'+esc(p.category)+'" data-status="'+st+'"'+(imgs.length?' tabindex="0" role="button" aria-label="Open photo gallery for '+esc(p.title)+'"':'')+'><div class="thumb"><span class="cat">'+esc(p.category)+'</span><span class="st '+st.toLowerCase()+'">'+st+'</span>'+cnt+thumb+'</div><div class="body"><h3>'+esc(p.title)+'</h3><p>'+esc(p.description)+'</p></div></article>';
   }).join('');
+  document.querySelectorAll('#projGrid .proj.hasgal').forEach(function(el){
+    el.addEventListener('click', function(){ openLb(parseInt(el.getAttribute('data-idx'),10)); });
+    el.addEventListener('keydown', function(e){ if(e.key==='Enter') openLb(parseInt(el.getAttribute('data-idx'),10)); });
+  });
   buildFilters(c.projects);
 
   testiCount = c.testimonials.length;
@@ -1017,6 +1057,49 @@ window.addEventListener('load', function(){
   } else {
     document.documentElement.classList.add('no-lenis');
   }
+});
+
+/* ---------- lightbox gallery ---------- */
+var lbEl = document.getElementById('lb'), lbImgs = [], lbTitle = '', lbI = 0;
+function lockBody(on){
+  if(on){
+    lockY = window.scrollY;
+    if(window.__lenis) window.__lenis.stop();
+    document.body.style.top = (-lockY)+'px';
+    document.body.classList.add('no-scroll');
+  } else {
+    document.body.classList.remove('no-scroll');
+    document.body.style.top = '';
+    window.scrollTo(0, lockY);
+    if(window.__lenis) window.__lenis.start();
+  }
+}
+function openLb(i){
+  var p = currentProjects[i]; if(!p) return;
+  lbImgs = projImages(p); lbTitle = p.title; lbI = 0;
+  if(!lbImgs.length) return;
+  showLb(); lbEl.classList.add('on'); lockBody(true);
+}
+function showLb(){
+  document.getElementById('lbImg').src = lbImgs[lbI];
+  document.getElementById('lbCap').textContent = lbTitle;
+  document.getElementById('lbCnt').textContent = (lbI+1) + '  /  ' + lbImgs.length;
+  var multi = lbImgs.length > 1;
+  lbEl.querySelector('.lb-p').style.display = multi ? 'flex' : 'none';
+  lbEl.querySelector('.lb-n').style.display = multi ? 'flex' : 'none';
+}
+function closeLb(){ lbEl.classList.remove('on'); lockBody(false); }
+function nextLb(){ lbI = (lbI+1) % lbImgs.length; showLb(); }
+function prevLb(){ lbI = (lbI-1+lbImgs.length) % lbImgs.length; showLb(); }
+lbEl.querySelector('.lb-x').addEventListener('click', closeLb);
+lbEl.querySelector('.lb-n').addEventListener('click', nextLb);
+lbEl.querySelector('.lb-p').addEventListener('click', prevLb);
+lbEl.addEventListener('click', function(e){ if(e.target === lbEl) closeLb(); });
+document.addEventListener('keydown', function(e){
+  if(!lbEl.classList.contains('on')) return;
+  if(e.key === 'Escape') closeLb();
+  if(e.key === 'ArrowRight') nextLb();
+  if(e.key === 'ArrowLeft') prevLb();
 });
 
 /* mobile menu — with scroll lock and viewport-anchored overlay */
