@@ -247,7 +247,10 @@ section{padding:170px 6vw;position:relative}
 
 /* Projects — magazine */
 #projects{background:rgba(250,247,238,.9)}
-.filterbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:56px}
+.filters{margin-bottom:56px}
+.filterbar{display:flex;gap:10px;flex-wrap:wrap}
+.filterbar + .filterbar{margin-top:14px}
+.filterbar.cats .fbtn{font-size:.72rem;padding:8px 20px;opacity:.9}
 .fbtn{border:1px solid rgba(23,28,37,.18);background:transparent;color:var(--charcoal);font-family:var(--sans);
   font-size:.78rem;letter-spacing:.08em;padding:10px 24px;border-radius:100px;cursor:pointer;font-weight:400;
   transition:background .45s var(--ease),color .45s var(--ease),border-color .45s var(--ease)}
@@ -269,6 +272,10 @@ section{padding:170px 6vw;position:relative}
 .proj:hover .thumb svg{transform:translateY(-5px) scale(1.02)}
 .proj .cat{position:absolute;top:18px;left:18px;background:rgba(247,244,236,.92);color:var(--charcoal);font-size:.6rem;font-weight:500;
   letter-spacing:.22em;padding:8px 16px;border-radius:100px;text-transform:uppercase;z-index:2;backdrop-filter:blur(4px)}
+.proj .st{position:absolute;top:18px;right:18px;font-size:.6rem;letter-spacing:.22em;padding:8px 16px;border-radius:100px;
+  text-transform:uppercase;z-index:2;font-weight:500}
+.proj .st.ongoing{background:rgba(23,28,37,.82);color:var(--ivory)}
+.proj .st.completed{background:var(--champagne);color:var(--graphite);font-weight:600}
 .proj .body{padding:30px 30px 34px}
 .proj h3{font-size:1.45rem;margin-bottom:8px;color:var(--charcoal)}
 .proj p{font-size:.9rem;color:var(--muted);line-height:1.8}
@@ -680,7 +687,10 @@ footer::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;
       <span class="sec-label">Our Work</span>
       <h2 class="sec-title">Featured Projects</h2>
     </div>
-    <div class="filterbar reveal" id="filterBar" role="group" aria-label="Filter projects by category"></div>
+    <div class="filters reveal">
+      <div class="filterbar" id="statusBar" role="group" aria-label="Filter projects by status"></div>
+      <div class="filterbar cats" id="filterBar" role="group" aria-label="Filter projects by category"></div>
+    </div>
     <div class="proj-grid" id="projGrid"></div>
   </div>
 </section>
@@ -780,25 +790,40 @@ function startTestiTimer(){
   if(testiCount > 1 && motionOK) testiTimer = setInterval(nextTesti, 7000);
 }
 
-/* ---------- projects filter ---------- */
-function buildFilters(projects){
-  var cats = [];
-  projects.forEach(function(p){ if(p.category && cats.indexOf(p.category)<0) cats.push(p.category); });
-  var bar = document.getElementById('filterBar');
-  if(cats.length < 2){ bar.style.display='none'; return; }
-  bar.innerHTML = '<button class="fbtn on" data-cat="*">All</button>' +
-    cats.map(function(c){ return '<button class="fbtn" data-cat="'+esc(c)+'">'+esc(c)+'</button>'; }).join('');
+/* ---------- projects filters (status + category, combined) ---------- */
+var activeStatus = '*', activeCat = '*';
+function projStatus(p){ return /complete/i.test(p.status||'') ? 'Completed' : 'Ongoing'; }
+function applyProjFilter(){
+  document.querySelectorAll('#projGrid .proj').forEach(function(card){
+    var ok = (activeStatus==='*' || card.getAttribute('data-status')===activeStatus) &&
+             (activeCat==='*' || card.getAttribute('data-cat')===activeCat);
+    card.classList.toggle('hidden', !ok);
+  });
+}
+function buildFilterRow(bar, values, attr, onPick){
+  bar.innerHTML = '<button class="fbtn on" data-v="*">All</button>' +
+    values.map(function(v){ return '<button class="fbtn" data-v="'+esc(v)+'">'+esc(v)+'</button>'; }).join('');
   bar.querySelectorAll('.fbtn').forEach(function(b){
     b.addEventListener('click', function(){
       bar.querySelectorAll('.fbtn').forEach(function(x){ x.classList.remove('on'); });
       b.classList.add('on');
-      var cat = b.getAttribute('data-cat');
-      document.querySelectorAll('#projGrid .proj').forEach(function(card){
-        var match = cat==='*' || card.getAttribute('data-cat')===cat;
-        card.classList.toggle('hidden', !match);
-      });
+      onPick(b.getAttribute('data-v'));
+      applyProjFilter();
     });
   });
+}
+function buildFilters(projects){
+  var cats = [], stats = [];
+  projects.forEach(function(p){
+    if(p.category && cats.indexOf(p.category)<0) cats.push(p.category);
+    var s = projStatus(p);
+    if(stats.indexOf(s)<0) stats.push(s);
+  });
+  var sBar = document.getElementById('statusBar'), cBar = document.getElementById('filterBar');
+  if(stats.length < 2){ sBar.style.display='none'; }
+  else buildFilterRow(sBar, ['Ongoing','Completed'], 'status', function(v){ activeStatus=v; });
+  if(cats.length < 2){ cBar.style.display='none'; }
+  else buildFilterRow(cBar, cats, 'cat', function(v){ activeCat=v; });
 }
 
 function render(c){
@@ -822,7 +847,8 @@ function render(c){
 
   document.getElementById('projGrid').innerHTML = c.projects.map(function(p,i){
     var thumb = p.image ? '<img src="'+esc(p.image)+'" alt="'+esc(p.title)+'" loading="lazy">' : PLACEHOLDER_THUMBS[i % PLACEHOLDER_THUMBS.length];
-    return '<article class="proj reveal" data-cat="'+esc(p.category)+'"><div class="thumb"><span class="cat">'+esc(p.category)+'</span>'+thumb+'</div><div class="body"><h3>'+esc(p.title)+'</h3><p>'+esc(p.description)+'</p></div></article>';
+    var st = projStatus(p);
+    return '<article class="proj reveal" data-cat="'+esc(p.category)+'" data-status="'+st+'"><div class="thumb"><span class="cat">'+esc(p.category)+'</span><span class="st '+st.toLowerCase()+'">'+st+'</span>'+thumb+'</div><div class="body"><h3>'+esc(p.title)+'</h3><p>'+esc(p.description)+'</p></div></article>';
   }).join('');
   buildFilters(c.projects);
 

@@ -279,18 +279,22 @@ $('addService').addEventListener('click', function(){
 /* ---------- projects ---------- */
 function renderProjects(){
   $('projectsList').innerHTML = content.projects.map(function(p,i){
+    var st = /complete/i.test(p.status||'') ? 'Completed' : 'Ongoing';
     return '<div class="item">'+
       '<button class="btn small danger rm" onclick="removeItem(\'projects\','+i+')">✕ Remove</button>'+
       '<label>Project Title</label><input value="'+esc(p.title)+'" onchange="content.projects['+i+'].title=this.value">'+
       '<div class="row2"><div><label>Category</label><input value="'+esc(p.category)+'" onchange="content.projects['+i+'].category=this.value"></div>'+
-      '<div><label>Photo</label><input type="file" accept="image/*" onchange="uploadImage(this,'+i+')"></div></div>'+
+      '<div><label>Status</label><select onchange="content.projects['+i+'].status=this.value">'+
+        '<option'+(st==='Ongoing'?' selected':'')+'>Ongoing</option>'+
+        '<option'+(st==='Completed'?' selected':'')+'>Completed</option></select></div></div>'+
+      '<label>Photo</label><input type="file" accept="image/*" onchange="uploadImage(this,'+i+')">'+
       '<label>Description</label><textarea onchange="content.projects['+i+'].description=this.value">'+esc(p.description)+'</textarea>'+
       (p.image ? '<img class="thumb-preview" src="https://raw.githubusercontent.com/'+cfg.owner+'/'+cfg.repo+'/main/'+esc(p.image)+'" onerror="this.style.display=\'none\'">' : '<div class="hint">No photo yet — a placeholder graphic is shown on the site.</div>')+
       '</div>';
   }).join('');
 }
 $('addProject').addEventListener('click', function(){
-  content.projects.push({title:'New Project',category:'Residential',description:'',image:''});
+  content.projects.push({title:'New Project',category:'Residential',status:'Ongoing',description:'',image:''});
   renderProjects();
 });
 
