@@ -120,6 +120,14 @@ nav a:not(.cta-btn):hover::after{transform:scaleX(1);transform-origin:left}
 .cta-btn:hover{box-shadow:0 12px 30px rgba(15,19,27,.28);background:var(--charcoal-2)}
 #menuBtn{display:none;background:none;border:none;cursor:pointer;z-index:60;padding:8px}
 #menuBtn svg{width:26px;height:26px;stroke:var(--charcoal)}
+#menuBtn .x{display:none}
+#menuBtn.open .burger{display:none}
+#menuBtn.open .x{display:block;stroke:var(--ivory)}
+/* while the menu is open, strip transform/filter from ancestors so the
+   fixed overlay anchors to the viewport (iOS containing-block fix) */
+header.menu-open{transform:none!important}
+header.menu-open .navwrap{background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;border-color:transparent}
+body.no-scroll{position:fixed;left:0;right:0;overflow:hidden;width:100%}
 
 /* ===== Buttons ===== */
 .btn{display:inline-flex;align-items:center;gap:12px;padding:17px 38px;border-radius:100px;font-weight:500;
@@ -302,8 +310,14 @@ input::placeholder,textarea::placeholder{color:#a9a292}
 input:focus,textarea:focus,select:focus{outline:none;border-color:var(--champagne);background:#fff;box-shadow:0 0 0 4px rgba(201,169,106,.14)}
 textarea{min-height:140px;resize:vertical}
 form .btn{border:none;cursor:pointer;width:100%;justify-content:center;font-family:inherit}
-.map-frame{margin-top:84px;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-m);line-height:0;border:1px solid var(--line)}
+.map-frame{margin-top:84px;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-m);line-height:0;border:1px solid var(--line);background:#fff}
 .map-frame iframe{width:100%;height:360px;border:0;filter:grayscale(.35) contrast(1.02)}
+.map-bar{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;padding:20px;line-height:1.5;background:#fff;border-top:1px solid var(--line)}
+.map-bar a{display:inline-flex;align-items:center;gap:9px;text-decoration:none;font-size:.82rem;letter-spacing:.05em;font-weight:500;
+  color:var(--charcoal);border:1px solid rgba(23,28,37,.2);border-radius:100px;padding:11px 24px;
+  transition:background .45s var(--ease),color .45s var(--ease),border-color .45s var(--ease)}
+.map-bar a:hover{background:var(--charcoal);color:var(--ivory);border-color:var(--charcoal)}
+.map-bar svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 
 /* WhatsApp float */
 .wa-float{position:fixed;bottom:28px;right:28px;z-index:60;width:56px;height:56px;border-radius:50%;background:#1fae56;
@@ -562,7 +576,8 @@ footer::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;
       <span class="brand-text"><b id="brandName">BRICKS</b><span>CONSTRUCTIONS</span></span>
     </a>
     <button id="menuBtn" aria-label="Open menu" aria-expanded="false">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      <svg class="burger" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      <svg class="x" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg>
     </button>
     <nav id="nav" aria-label="Main navigation">
       <a href="#about">About</a>
@@ -701,7 +716,12 @@ footer::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;
         <button type="submit" class="btn btn-solid magnetic">Send Enquiry on WhatsApp <span class="arr" aria-hidden="true">→</span></button>
       </form>
     </div>
-    <div class="map-frame reveal"><iframe id="mapFrame" title="Bricks Constructions location map" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe></div>
+    <div class="map-frame reveal"><iframe id="mapFrame" title="Bricks Constructions location map" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+      <div class="map-bar">
+        <a id="mapOpen" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>Open in Google Maps</a>
+        <a id="mapDir" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M21.7 10.9 13.1 2.3a1.5 1.5 0 0 0-2.2 0l-8.6 8.6a1.5 1.5 0 0 0 0 2.2l8.6 8.6a1.5 1.5 0 0 0 2.2 0l8.6-8.6a1.5 1.5 0 0 0 0-2.2zM10 15v-3a2 2 0 0 1 2-2h3.5M13.5 8 16 10l-2.5 2"/></svg>Get Directions</a>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -831,6 +851,8 @@ function render(c){
     '<div class="c-item"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div><b>Working Hours</b><span>Mon – Sat: 9:00 AM – 7:00 PM</span></div></div>';
 
   document.getElementById('mapFrame').src = 'https://www.google.com/maps?q=' + encodeURIComponent(ct.mapQuery) + '&output=embed';
+  document.getElementById('mapOpen').href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(ct.mapQuery);
+  document.getElementById('mapDir').href = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(ct.mapQuery);
   document.getElementById('waFloat').href = 'https://wa.me/' + ct.whatsapp.replace(/\D/g,'') + '?text=' + encodeURIComponent('Hi, I found you on bricksconstruction.in — I would like a consultation.');
 
   wireAnimations();
@@ -952,6 +974,7 @@ window.addEventListener('load', function(){
   if(window.Lenis && motionOK){
     try{
       var lenis = new Lenis({lerp:0.09, wheelMultiplier:1});
+      window.__lenis = lenis;
       lenisOn = true;
       function raf(t){ lenis.raf(t); requestAnimationFrame(raf); }
       requestAnimationFrame(raf);
@@ -970,14 +993,31 @@ window.addEventListener('load', function(){
   }
 });
 
-/* mobile menu */
+/* mobile menu — with scroll lock and viewport-anchored overlay */
 var nav = document.getElementById('nav'), menuBtn = document.getElementById('menuBtn');
-menuBtn.addEventListener('click', function(){
-  var open = nav.classList.toggle('open');
+var lockY = 0;
+function setMenu(open){
+  nav.classList.toggle('open', open);
+  menuBtn.classList.toggle('open', open);
+  headerEl.classList.toggle('menu-open', open);
+  headerEl.classList.remove('hid');
   menuBtn.setAttribute('aria-expanded', open);
-});
+  menuBtn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  if(open){
+    lockY = window.scrollY;
+    if(window.__lenis) window.__lenis.stop();
+    document.body.style.top = (-lockY)+'px';
+    document.body.classList.add('no-scroll');
+  } else {
+    document.body.classList.remove('no-scroll');
+    document.body.style.top = '';
+    window.scrollTo(0, lockY);
+    if(window.__lenis) window.__lenis.start();
+  }
+}
+menuBtn.addEventListener('click', function(){ setMenu(!nav.classList.contains('open')); });
 nav.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', function(){
-  nav.classList.remove('open'); menuBtn.setAttribute('aria-expanded','false');
+  if(nav.classList.contains('open')) setMenu(false);
 }); });
 
 /* enquiry form -> WhatsApp */
