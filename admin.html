@@ -297,7 +297,11 @@ function renderProjects(){
     return '<div class="item">'+
       '<button class="btn small danger rm" onclick="removeItem(\'projects\','+i+')">✕ Remove</button>'+
       '<label>Project Title</label><input value="'+esc(p.title)+'" onchange="content.projects['+i+'].title=this.value">'+
-      '<div class="row2"><div><label>Category</label><input value="'+esc(p.category)+'" onchange="content.projects['+i+'].category=this.value"></div>'+
+      '<div class="row2"><div><label>Category</label><select onchange="content.projects['+i+'].category=this.value">'+
+        ['Residential','Commercial','Mixed-Use','Renovation'].concat(
+          ['Residential','Commercial','Mixed-Use','Renovation'].indexOf(p.category)<0 && p.category ? [p.category] : []
+        ).map(function(c){ return '<option'+(c===p.category?' selected':'')+'>'+esc(c)+'</option>'; }).join('')+
+      '</select></div>'+
       '<div><label>Status</label><select onchange="content.projects['+i+'].status=this.value">'+
         '<option'+(st==='Ongoing'?' selected':'')+'>Ongoing</option>'+
         '<option'+(st==='Completed'?' selected':'')+'>Completed</option></select></div></div>'+
