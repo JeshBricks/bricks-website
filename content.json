@@ -10,10 +10,26 @@
     "heading": "About Bricks Constructions",
     "text": "Bricks Constructions is a Chennai-based construction company serving Madambakkam and surrounding areas. From independent houses and apartments to commercial spaces and renovations, we handle every project with the same commitment — strong foundations, quality materials and transparent pricing. Our experienced team turns your plans into reality, on time and on budget.",
     "stats": [
-      { "number": "50", "suffix": "+", "label": "Projects Completed" },
-      { "number": "10", "suffix": "+", "label": "Years Experience" },
-      { "number": "100", "suffix": "%", "label": "Client Satisfaction" },
-      { "number": "30", "suffix": "+", "label": "Expert Workers" }
+      {
+        "number": "50",
+        "suffix": "+",
+        "label": "Projects Completed"
+      },
+      {
+        "number": "10",
+        "suffix": "+",
+        "label": "Years Experience"
+      },
+      {
+        "number": "100",
+        "suffix": "%",
+        "label": "Client Satisfaction"
+      },
+      {
+        "number": "30",
+        "suffix": "+",
+        "label": "Expert Workers"
+      }
     ]
   },
   "services": [
@@ -50,22 +66,44 @@
   ],
   "projects": [
     {
-      "title": "Modern Residence, Madambakkam",
-      "category": "Residential",
-      "description": "3BHK independent house with contemporary elevation.",
-      "image": ""
-    },
-    {
-      "title": "Mixed-Use Building, Madambakkam",
+      "title": "Mixed-Use Building, Indira nagar",
       "category": "Mixed-Use",
-      "description": "G+2 building — ground-floor shops with residences above.",
-      "image": ""
+      "description": "A contemporary G+2 mixed-use building combining thoughtfully planned commercial and residential spaces",
+      "images": []
     },
     {
-      "title": "Villa Renovation",
-      "category": "Renovation",
-      "description": "Complete renovation and modern interior finishing.",
-      "image": ""
+      "title": "Modern Residence, Narasimma nagar",
+      "category": "Residential",
+      "description": "A sophisticated modern residence crafted for comfort, character, and timeless living",
+      "images": []
+    },
+    {
+      "title": "Modern Residence, Sameera Layout",
+      "category": "Residential",
+      "status": "Ongoing",
+      "description": "A striking modern residence blending clean architecture with warm, refined details",
+      "images": []
+    },
+    {
+      "title": "Mixed use Building, Venus Avenue",
+      "category": "Mixed-Use",
+      "status": "Ongoing",
+      "description": "",
+      "images": []
+    },
+    {
+      "title": "Mixed use Building, Indira nagar",
+      "category": "Mixed-Use",
+      "status": "Ongoing",
+      "description": "A contemporary G+1 mixed-use building designed to seamlessly integrate commercial and residential spaces",
+      "images": []
+    },
+    {
+      "title": "Modern Residence, Kurunji Nagar",
+      "category": "Residential",
+      "status": "Ongoing",
+      "description": "A sophisticated modern residence crafted for comfort, character, and timeless living.”\n“Contemporary living, thoughtfully designed with elegance and purpose",
+      "images": []
     }
   ],
   "testimonials": [
